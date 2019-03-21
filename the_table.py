@@ -1,3 +1,4 @@
+import time
 import uuid
 from Blackjack import deckengine as de
 
@@ -24,6 +25,21 @@ def show_cards(player,dealer):
     print('_'*40)
     print('| Dealer {a} '.format(a=dealer.status))
     print('_'*40)
+
+def show_round_results(player, dealer):
+    if ("BUSTED" in player.status and "BUSTED" not in dealer.status) or dealer.valid_score > player.valid_score:
+        dealer.status += " **WINNER**"
+        player.chips.lose_bet()
+    elif "BUSTED" not in player.status and "BUSTED" in dealer.status or player.valid_score > dealer.valid_score:
+        player.status += " **WINNER**"
+        player.chips.win_bet()
+    elif player.valid_score == dealer.valid_score:
+        player.status += " **A PUSH**"
+        dealer.status += " **A PUSH**"
+
+    player.status += " Total chips:" + str(player.chips.total)
+    show_cards(player, dealer)
+
 
 deck = de.Deck()
 #for card in deck.cards:
@@ -78,15 +94,14 @@ while player1.turn:
     show_cards(player1,dealer)
     if dealer.turn:
         break
-    print('dealer')
-    print(dealer.turn )
-    print('player')
-    print(player1.turn )
+#    print('dealer')
+#    print(dealer.turn )
+#    print('player')
+#    print(player1.turn )
     #quit()
 
-print('hello')
 
-while dealer.turn:
+while True: #dealer.turn:
     if dealer.hand.score < 17:
         dealer.hit(deck.give_card())
     else:
@@ -95,8 +110,12 @@ while dealer.turn:
 
     dealer.hand.show_all()   
     show_cards(player1,dealer)
+    time.sleep(3)
 
+    if not dealer.turn:
+        break
 
+show_round_results(player1, dealer)
 
  #   if player1.chips.bet > 0:
  #       player1.turn = False

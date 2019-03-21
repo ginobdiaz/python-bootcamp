@@ -249,6 +249,7 @@ class Player:
         self.chips = Chips(bankroll)
         self.hand = Hand()
         self.status = ''
+        self.valid_score = 0
 
     def make_bet(self):
         try:
@@ -284,14 +285,19 @@ class Player:
         if self.hand.score > 21:
             self.status = 'has BUSTED with ' + str(self.hand.score)
             self.turn = False
+            self.valid_score = 0
         elif self.hand.score == 21 or self.hand.alt_score == 21:
             self.status = 'hit 21!'
             self.turn = False
+            self.valid_score = 21
         else:
             if self.hand.score != self.hand.alt_score:
                 self.status = 'has ' + str(self.hand.alt_score) + ' or ' + str(self.hand.score)
+                self.valid_score = self.hand.score if self.hand.alt_score > 21 or self.hand.score > self.hand.alt_score else self.hand.alt_score
             else:
                 self.status = 'has ' + str(self.hand.score)
+                self.valid_score = self.hand.score
+    
 
 class Dealer(Player):
 
@@ -306,13 +312,22 @@ class Dealer(Player):
         if self.hand.score > 21:
             self.status = 'has BUSTED with ' + str(self.hand.score)
             self.turn = False
+            self.valid_score = 0
         elif self.hand.score == 21 or self.hand.alt_score == 21:
             self.status = 'hit 21!'
             self.turn = False
+            self.valid_score = 21
         else:
             if not self.hand.has_face_downs():
                 if self.hand.score != self.hand.alt_score:
                     self.status = 'has ' + str(self.hand.alt_score) + ' or ' + str(self.hand.score)
+                    self.valid_score = self.hand.score if self.hand.alt_score > 21 or self.hand.score > self.hand.alt_score else self.hand.alt_score
                 else:
                     self.status = 'has ' + str(self.hand.score)
+                    self.valid_score = self.hand.score
+
+                if self.valid_score >= 17 and self.valid_score <21:
+                    self.turn = False
+
+
 
