@@ -185,16 +185,31 @@ class Deck:
 class Hand:
     def __init__(self):
         self.cards = []
-        self.value = 0
+        self.score = 0
+        self.alt_score = 0
 
     def add_card(self,card):
-        self.cards.append(card)
+            self.score += card.face.rank
+            self.alt_score += card.face.alt_rank
+            self.cards.append(card)
 
-    def hand_score(self):
+    def rescore(self):
         for card in self.cards:
-            self.value += card.rank
-        
-        return self.value
+            self.score += card.face.rank
+            self.alt_score += card.face.alt_rank
+
+    def show_all(self):
+        for card in self.cards:
+            card.is_face_up = True
+    
+    def has_face_downs(self):
+        for card in self.cards:
+            if not card.is_face_up:
+                return True
+
+        return False
+
+
 
 class Chips:
     number_wins = 0
@@ -233,6 +248,7 @@ class Player:
         self.turn = False
         self.chips = Chips(bankroll)
         self.hand = Hand()
+        self.status = ''
 
     def make_bet(self):
         try:
@@ -247,8 +263,35 @@ class Player:
             self.chips.bet = 0
 
     def hit_or_stand(self):
-        pass
+        try:
+            ans = input('Hit or Stand (H/S): ')
+            if ans[0].upper() == 'H':
+                return True
+            elif ans[0].upper() == 'S':
+                self.turn = False
 
+        except:
+            print('Please only enter an H or an S')
+        
+        return False
+
+    def hit(self,card):
+        card.is_face_up = True
+        self.hand.add_card(card)
+        self.set_status()   
+    
+    def set_status(self):
+        if self.hand.score > 21:
+            self.status = 'has BUSTED with ' + str(self.hand.score)
+            self.turn = False
+        elif self.hand.score == 21 or self.hand.alt_score == 21:
+            self.status = 'hit 21!'
+            self.turn = False
+        else:
+            if self.hand.score != self.hand.alt_score:
+                self.status = 'has ' + str(self.hand.alt_score) + ' or ' + str(self.hand.score)
+            else:
+                self.status = 'has ' + str(self.hand.score)
 
 class Dealer(Player):
 
@@ -256,4 +299,20 @@ class Dealer(Player):
         Player.__init__(self,nick='Dealer',bankroll=10000)
 
 
+    def make_bet(self):
+        print("Dealers cannot make bets.")
+
+    def set_status(self):
+        if self.hand.score > 21:
+            self.status = 'has BUSTED with ' + str(self.hand.score)
+            self.turn = False
+        elif self.hand.score == 21 or self.hand.alt_score == 21:
+            self.status = 'hit 21!'
+            self.turn = False
+        else:
+            if not self.hand.has_face_downs():
+                if self.hand.score != self.hand.alt_score:
+                    self.status = 'has ' + str(self.hand.alt_score) + ' or ' + str(self.hand.score)
+                else:
+                    self.status = 'has ' + str(self.hand.score)
 
